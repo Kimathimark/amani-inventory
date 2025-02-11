@@ -1,0 +1,51 @@
+.login{
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login video{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+
+
+.opacityLogin{
+    height: 100%;
+    width: 100%;
+    background-color: black;
+    position: absolute;
+    top: 0;
+    opacity: 0.6;
+}
+
+
+
+.myGeneralContent{
+
+    height: 55%;
+    width: 35%;
+    position: absolute;
+    background-color: white;
+    border-radius: 10px;
+    z-index: 11;
+    padding: 40px;
+}
+
+
+.myGeneralContent h3{
+    margin-bottom: 20px;
+}
+
+
+
+.myGeneralContent Button{
+    margin-top: 40px;
+    width: 100%;
+    
+}

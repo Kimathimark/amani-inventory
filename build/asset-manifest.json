@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/static/css/main.aacfb1f2.css",
+    "main.js": "/static/js/main.7cf3705c.js",
+    "static/js/787.97082677.chunk.js": "/static/js/787.97082677.chunk.js",
+    "static/media/bg3.jpg": "/static/media/bg3.7bff3824b706ed81be21.jpg",
+    "static/media/intro.jpg": "/static/media/intro.6d783c6ea3c113931a40.jpg",
+    "static/media/mercy.jpg": "/static/media/mercy.91eb6bd9a7f0742e14d1.jpg",
+    "static/media/reviews_bg.jpg": "/static/media/reviews_bg.ab237df6d41277de0bb9.jpg",
+    "static/media/channelone.jpg": "/static/media/channelone.67cc5b4bd30a665123fd.jpg",
+    "static/media/back50.jpg": "/static/media/back50.4e0195c8e72c00c17872.jpg",
+    "static/media/thelogo.png": "/static/media/thelogo.0397e13a9b31f13dcf57.png",
+    "static/media/upload5.jpg": "/static/media/upload5.5903795b0834752a7c13.jpg",
+    "static/media/back-image2.png": "/static/media/back-image2.a4752f7fc87124f00251.png",
+    "static/media/default-cover.gif": "/static/media/default-cover.cfb7a6a2293a248302ab.gif",
+    "static/media/cities-bg.png": "/static/media/cities-bg.75023d07576e7aba941f.png",
+    "static/media/defprofile.png": "/static/media/defprofile.588127554d1e566b2dc7.png",
+    "static/media/logo.svg": "/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "index.html": "/index.html",
+    "main.aacfb1f2.css.map": "/static/css/main.aacfb1f2.css.map",
+    "main.7cf3705c.js.map": "/static/js/main.7cf3705c.js.map",
+    "787.97082677.chunk.js.map": "/static/js/787.97082677.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.aacfb1f2.css",
+    "static/js/main.7cf3705c.js"
+  ]
+}
