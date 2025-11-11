@@ -1,8 +1,8 @@
+replicaCount: 2
+
 image:
   repository: registry.digitalocean.com/terra-waas/tap2pay
   tag: amani
-
-replicaCount: 2
 
 service:
   type: ClusterIP

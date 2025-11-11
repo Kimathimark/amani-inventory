@@ -11,6 +11,7 @@ env:
   VERSION_TAG: amani
   NAMESPACE: amani
   DEPLOYMENT_NAME: inventory-app
+  EMAIL_LETSENCRYPT: kimathimark457@gmail.com
 
 jobs:
   build-deploy:
@@ -26,7 +27,7 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      # 3️⃣ Login to DigitalOcean Container Registry
+      # 3️⃣ Login to DO Container Registry
       - name: Login to DO Container Registry
         run: doctl registry login --expiry-seconds 3600
 
@@ -42,7 +43,7 @@ jobs:
       - name: Prepare kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
+          echo "${{ secrets.KUBECONFIG_DATA }}" > ~/.kube/config
           chmod 600 ~/.kube/config
           kubectl config current-context
 
@@ -51,7 +52,7 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      # 7️⃣ Deploy Helm chart to cluster
+      # 7️⃣ Deploy Helm chart
       - name: Deploy Helm chart
         run: |
           helm repo update
@@ -60,4 +61,6 @@ jobs:
             --create-namespace \
             --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
             --set image.tag=${{ env.VERSION_TAG }} \
+            --set ingress.tls[0].secretName=amani-tls \
+            --set ingress.tls[0].hosts[0]=amani.terrasofthq.com \
             --wait --timeout 5m
