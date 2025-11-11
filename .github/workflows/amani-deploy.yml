@@ -1,0 +1,43 @@
+name: Build image for aman
+
+# Trigger workflow when code is pushed to 'amani' branch
+on:
+  push:
+    branches:
+      - "amani"
+
+# Environment variables
+env:
+  IMAGE_REGISTRY: registry.digitalocean.com/terra-waas
+  IMAGE_NAME: tap2pay             # Keep your existing registry image name
+  VERSION_TAG: amani
+  NAMESPACE: amani
+  DEPLOYMENT_NAME: inventory-app
+
+jobs:
+  build-docker-image:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Install DigitalOcean CLI
+      - name: Install DigitalOcean CLI
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      # 3️⃣ Login to DigitalOcean Container Registry
+      - name: Login to DigitalOcean Container Registry
+        run: doctl registry login --expiry-seconds 3600
+
+      # 4️⃣ Build & Push Docker Image
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
