@@ -1,0 +1,22 @@
+image:
+  repository: registry.digitalocean.com/terra-waas/tap2pay
+  tag: amani
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: amani.terrasofthq.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: amani-tls
+      hosts:
+        - amani.terrasofthq.com
