@@ -1,43 +1,63 @@
-name: Build image for aman
+name: Build & Deploy Amani Inventory
 
-# Trigger workflow when code is pushed to 'amani' branch
 on:
   push:
     branches:
       - "amani"
 
-# Environment variables
 env:
   IMAGE_REGISTRY: registry.digitalocean.com/terra-waas
-  IMAGE_NAME: tap2pay             # Keep your existing registry image name
+  IMAGE_NAME: tap2pay
   VERSION_TAG: amani
   NAMESPACE: amani
   DEPLOYMENT_NAME: inventory-app
 
 jobs:
-  build-docker-image:
-    name: Build & Push Docker Image
+  build-deploy:
     runs-on: ubuntu-latest
-
     steps:
       # 1️⃣ Checkout repository
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2️⃣ Install DigitalOcean CLI
-      - name: Install DigitalOcean CLI
+      - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       # 3️⃣ Login to DigitalOcean Container Registry
-      - name: Login to DigitalOcean Container Registry
+      - name: Login to DO Container Registry
         run: doctl registry login --expiry-seconds 3600
 
-      # 4️⃣ Build & Push Docker Image
-      - name: Build & Push Docker Image
+      # 4️⃣ Build and push Docker image
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
+
+      # 5️⃣ Prepare kubeconfig
+      - name: Prepare kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
+          chmod 600 ~/.kube/config
+          kubectl config current-context
+
+      # 6️⃣ Install Helm
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      # 7️⃣ Deploy Helm chart to cluster
+      - name: Deploy Helm chart
+        run: |
+          helm repo update
+          helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
+            --namespace ${{ env.NAMESPACE }} \
+            --create-namespace \
+            --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ env.VERSION_TAG }} \
+            --wait --timeout 5m
