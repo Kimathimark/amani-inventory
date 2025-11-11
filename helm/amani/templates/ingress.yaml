@@ -4,9 +4,9 @@ metadata:
   name: inventory-ingress
   namespace: amani
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
+  ingressClassName: nginx       # ← Add this line
   tls:
     - hosts:
         - amani.terrasofthq.com
