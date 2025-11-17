@@ -39,7 +39,7 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
 
-      # 5️⃣ Prepare kubeconfig (BASE64 DECODE)
+      # 5️⃣ Prepare kubeconfig
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
@@ -53,13 +53,27 @@ jobs:
       - name: Install Helm
         run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      # 7️⃣ Deploy using LOCAL chart and reuse existing Ingress
-      - name: Deploy Helm chart
+      # 7️⃣ Check existing Ingress & deploy
+      - name: Deploy Helm chart safely
         run: |
-          helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
-            --namespace ${{ env.NAMESPACE }} \
-            --create-namespace \
-            --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
-            --set image.tag=${{ env.VERSION_TAG }} \
-            --set ingress.enabled=false \
-            --wait --timeout 5m
+          if kubectl get ingress -n ${{ env.NAMESPACE }} amani-ingress >/dev/null 2>&1; then
+            echo "Ingress exists — skip creating it"
+            helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
+              --namespace ${{ env.NAMESPACE }} \
+              --create-namespace \
+              --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
+              --set image.tag=${{ env.VERSION_TAG }} \
+              --set ingress.enabled=false \
+              --wait --timeout 5m
+          else
+            echo "Ingress does not exist — create it"
+            helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
+              --namespace ${{ env.NAMESPACE }} \
+              --create-namespace \
+              --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
+              --set image.tag=${{ env.VERSION_TAG }} \
+              --set ingress.enabled=true \
+              --set ingress.tls[0].secretName=amani-tls \
+              --set ingress.tls[0].hosts[0]=amani.terrasofthq.com \
+              --wait --timeout 5m
+          fi
