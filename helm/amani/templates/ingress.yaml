@@ -11,10 +11,10 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
     - hosts:
-        - {{ .Values.ingress.tls[0].hosts[0] }}
-      secretName: {{ .Values.ingress.tls[0].secretName }}
+        - {{ index (index .Values.ingress.tls 0) "hosts" | index 0 }}
+      secretName: {{ index (index .Values.ingress.tls 0) "secretName" }}
   rules:
-    - host: {{ .Values.ingress.hosts[0].host }}
+    - host: {{ index (index .Values.ingress.hosts 0) "host" }}
       http:
         paths:
           - path: /
