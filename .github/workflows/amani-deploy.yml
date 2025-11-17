@@ -11,13 +11,12 @@ env:
   VERSION_TAG: amani
   NAMESPACE: amani
   DEPLOYMENT_NAME: inventory-app
-  EMAIL_LETSENCRYPT: kimathimark457@gmail.com
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-
     steps:
+
       # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,19 +28,19 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       # 3️⃣ Login to DO Container Registry
-      - name: Login to DO Container Registry
+      - name: Login to DOCR
         run: doctl registry login --expiry-seconds 3600
 
-      # 4️⃣ Build & Push Docker Image
-      - name: Build and Push Docker Image
+      # 4️⃣ Build & Push Docker image
+      - name: Build and Push Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
 
-      # 5️⃣ Prepare kubeconfig (FIXED - now base64 decoded)
-      - name: Prepare kubeconfig
+      # 5️⃣ Prepare kubeconfig (BASE64 DECODE)
+      - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${KUBECONFIG_DATA}" | base64 -d > ~/.kube/config
@@ -52,13 +51,11 @@ jobs:
 
       # 6️⃣ Install Helm
       - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      # 7️⃣ Deploy Helm chart
+      # 7️⃣ Deploy using LOCAL chart
       - name: Deploy Helm chart
         run: |
-          helm repo update
           helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
