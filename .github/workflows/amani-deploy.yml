@@ -27,12 +27,12 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      # 3️⃣ Login to DO Container Registry
-      - name: Login to DOCR
+      # 3️⃣ Login to DOCR
+      - name: Login to DO Container Registry
         run: doctl registry login --expiry-seconds 3600
 
       # 4️⃣ Build & Push Docker image
-      - name: Build and Push Image
+      - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -53,8 +53,8 @@ jobs:
       - name: Install Helm
         run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      # 7️⃣ Check existing Ingress & deploy
-      - name: Deploy Helm chart safely
+      # 7️⃣ Deploy Helm chart safely
+      - name: Deploy Helm chart
         run: |
           if kubectl get ingress -n ${{ env.NAMESPACE }} amani-ingress >/dev/null 2>&1; then
             echo "Ingress exists — skip creating it"

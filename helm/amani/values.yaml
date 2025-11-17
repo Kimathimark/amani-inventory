@@ -5,6 +5,7 @@ image:
   tag: amani
 
 service:
+  name: inventory-service
   type: ClusterIP
   port: 80
 
