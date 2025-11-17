@@ -1,24 +1,27 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: inventory-ingress
-  namespace: amani
+  namespace: {{ .Release.Namespace }}
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
-  ingressClassName: nginx       # ← Add this line
+  ingressClassName: {{ .Values.ingress.className }}
   tls:
     - hosts:
-        - amani.terrasofthq.com
-      secretName: amani-tls
+        - {{ .Values.ingress.tls[0].hosts[0] }}
+      secretName: {{ .Values.ingress.tls[0].secretName }}
   rules:
-    - host: amani.terrasofthq.com
+    - host: {{ .Values.ingress.hosts[0].host }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: inventory-service
+                name: {{ .Values.service.name }}
                 port:
-                  number: 80
+                  number: {{ .Values.service.port }}
+{{- end }}

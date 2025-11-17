@@ -11,12 +11,12 @@ env:
   VERSION_TAG: amani
   NAMESPACE: amani
   DEPLOYMENT_NAME: inventory-app
-  EMAIL_LETSENCRYPT: kimathimark457@gmail.com
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
+
       # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,12 +27,12 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      # 3️⃣ Login to DO Container Registry
+      # 3️⃣ Login to DOCR
       - name: Login to DO Container Registry
         run: doctl registry login --expiry-seconds 3600
 
-      # 4️⃣ Build and push Docker image
-      - name: Build and Push Docker Image
+      # 4️⃣ Build & Push Docker image
+      - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -40,27 +40,40 @@ jobs:
           tags: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
 
       # 5️⃣ Prepare kubeconfig
-      - name: Prepare kubeconfig
+      - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_DATA }}" > ~/.kube/config
+          echo "${KUBECONFIG_DATA}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
           kubectl config current-context
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
 
       # 6️⃣ Install Helm
       - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      # 7️⃣ Deploy Helm chart
+      # 7️⃣ Deploy Helm chart safely
       - name: Deploy Helm chart
         run: |
-          helm repo update
-          helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
-            --namespace ${{ env.NAMESPACE }} \
-            --create-namespace \
-            --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
-            --set image.tag=${{ env.VERSION_TAG }} \
-            --set ingress.tls[0].secretName=amani-tls \
-            --set ingress.tls[0].hosts[0]=amani.terrasofthq.com \
-            --wait --timeout 5m
+          if kubectl get ingress -n ${{ env.NAMESPACE }} amani-ingress >/dev/null 2>&1; then
+            echo "Ingress exists — skip creating it"
+            helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
+              --namespace ${{ env.NAMESPACE }} \
+              --create-namespace \
+              --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
+              --set image.tag=${{ env.VERSION_TAG }} \
+              --set ingress.enabled=false \
+              --wait --timeout 5m
+          else
+            echo "Ingress does not exist — create it"
+            helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
+              --namespace ${{ env.NAMESPACE }} \
+              --create-namespace \
+              --set image.repository=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }} \
+              --set image.tag=${{ env.VERSION_TAG }} \
+              --set ingress.enabled=true \
+              --set ingress.tls[0].secretName=amani-tls \
+              --set ingress.tls[0].hosts[0]=amani.terrasofthq.com \
+              --wait --timeout 5m
+          fi
