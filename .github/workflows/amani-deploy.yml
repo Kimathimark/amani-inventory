@@ -53,7 +53,7 @@ jobs:
       - name: Install Helm
         run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      # 7️⃣ Deploy using LOCAL chart, reuse existing ingress
+      # 7️⃣ Deploy using LOCAL chart and reuse existing Ingress
       - name: Deploy Helm chart
         run: |
           helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./helm/amani \
@@ -63,4 +63,3 @@ jobs:
             --set image.tag=${{ env.VERSION_TAG }} \
             --set ingress.enabled=false \
             --wait --timeout 5m
-
