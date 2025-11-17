@@ -16,6 +16,7 @@ env:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout repository
@@ -31,7 +32,7 @@ jobs:
       - name: Login to DO Container Registry
         run: doctl registry login --expiry-seconds 3600
 
-      # 4️⃣ Build and push Docker image
+      # 4️⃣ Build & Push Docker Image
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -39,13 +40,15 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
 
-      # 5️⃣ Prepare kubeconfig
+      # 5️⃣ Prepare kubeconfig (FIXED - now base64 decoded)
       - name: Prepare kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_DATA }}" > ~/.kube/config
+          echo "${KUBECONFIG_DATA}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
           kubectl config current-context
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
 
       # 6️⃣ Install Helm
       - name: Install Helm
